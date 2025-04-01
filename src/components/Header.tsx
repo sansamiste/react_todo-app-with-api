@@ -8,6 +8,7 @@ interface Props {
   toggleAllTodos: () => void;
   isLoading: boolean;
   todos: Todo[];
+  shouldFocusCreationForm: boolean;
 }
 
 export const Header: React.FC<Props> = ({
@@ -17,16 +18,13 @@ export const Header: React.FC<Props> = ({
   toggleAllTodos,
   isLoading,
   todos,
+  shouldFocusCreationForm,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  inputRef.current?.focus();
-
   useEffect(() => {
-    if (!isLoading) {
-      inputRef.current?.focus();
-    }
-  }, [isLoading]);
+    inputRef.current?.focus();
+  }, [shouldFocusCreationForm]);
 
   return (
     <header className="todoapp__header">
@@ -54,7 +52,6 @@ export const Header: React.FC<Props> = ({
           value={newTodoTitle}
           onChange={e => setNewTodoTitle(e.target.value)}
           disabled={isLoading}
-          autoFocus={!isLoading}
         />
       </form>
     </header>

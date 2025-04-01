@@ -28,10 +28,10 @@ export const TodoItem = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing || isError) {
       setTimeout(() => inputRef.current?.focus(), 0);
     }
-  }, [isEditing, todo]);
+  }, [isEditing, isError]);
 
   const handleDoubleClick = () => {
     setIsEditing(true);
@@ -40,9 +40,14 @@ export const TodoItem = ({
   const handleBlur = async () => {
     const trimmedTitle = newTitle.trim();
 
-    if (trimmedTitle === todo.title || isError) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+    if (trimmedTitle === todo.title) {
       setIsEditing(false);
+
+      return;
+    }
+
+    if (!trimmedTitle) {
+      deleteTodo(todo.id);
 
       return;
     }
@@ -64,8 +69,7 @@ export const TodoItem = ({
     }
 
     if (event.key === 'Enter' && !isError) {
-      (event.currentTarget as HTMLInputElement).blur();
-      setIsEditing(false);
+      inputRef.current?.blur();
     }
   };
 
@@ -76,6 +80,7 @@ export const TodoItem = ({
         completed: todo.completed,
         'is-editing': isEditing,
       })}
+      onDoubleClick={handleDoubleClick}
     >
       <label className="todo__status-label">
         <input
@@ -94,6 +99,7 @@ export const TodoItem = ({
           className="todo__title-field"
           value={newTitle}
           data-cy="TodoTitleField"
+          placeholder="Empty todo will be deleted"
           onBlur={handleBlur}
           onChange={e => setNewTitle(e.target.value)}
           onKeyUp={handleKeyUp}
@@ -101,19 +107,9 @@ export const TodoItem = ({
           ref={inputRef}
         />
       ) : (
-        <span
-          data-cy="TodoTitle"
-          className="todo__title"
-          onDoubleClick={handleDoubleClick}
-        >
+        <span data-cy="TodoTitle" className="todo__title">
           {todo.title}
         </span>
-      )}
-
-      {isError && (
-        <div className="error-message">
-          <span>Unable to update the task. Please try again.</span>
-        </div>
       )}
 
       {!isEditing && (

@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { UserWarning } from './UserWarning';
 import {
   USER_ID,
@@ -27,6 +27,12 @@ export const App: React.FC = () => {
   const [tempAddedTodo, setTempAddedTodo] = useState<Todo | null>(null);
   const [deletedIds, setDeletedIds] = useState<number[]>([]);
   const [toggledIds] = useState<number[]>([]);
+
+  const shouldFocusCreationForm = useRef(true);
+
+  useEffect(() => {
+    shouldFocusCreationForm.current = false;
+  }, []);
 
   const handleError = (message: string) => {
     setErrorMessage(message);
@@ -86,6 +92,7 @@ export const App: React.FC = () => {
       .finally(() => {
         setIsLoading(false);
         setTempAddedTodo(null);
+        shouldFocusCreationForm.current = true;
       });
   };
 
@@ -160,6 +167,7 @@ export const App: React.FC = () => {
       handleError('Unable to delete a todo');
     } finally {
       setDeletedIds(ids => ids.filter(id => id !== todoId));
+      shouldFocusCreationForm.current = true;
     }
   };
 
@@ -184,23 +192,24 @@ export const App: React.FC = () => {
       return;
     }
 
-    setDeletedIds(prev => [...prev, id]);
-
-    setTodos(prevTodos =>
-      prevTodos.map(todo =>
-        todo.id === id ? { ...todo, title: trimmedTitle } : todo,
-      ),
-    );
+    setDeletedIds(ids => [...ids, id]);
 
     try {
       await updateTodo(id, { title: trimmedTitle });
+      setTodos(prevTodos =>
+        prevTodos.map(todo =>
+          todo.id === id ? { ...todo, title: trimmedTitle } : todo,
+        ),
+      );
     } catch {
-      handleError('Unable to update a todo');
       setTodos(prevTodos =>
         prevTodos.map(todo => (todo.id === id ? foundTodo : todo)),
       );
+      setErrorMessage('Unable to update a todo');
+      setTimeout(() => setErrorMessage(''), 3000);
+      throw new Error('');
     } finally {
-      setDeletedIds(prev => prev.filter(loadingId => loadingId !== id));
+      setDeletedIds(ids => ids.filter(todoId => todoId !== id));
     }
   };
 
@@ -221,6 +230,7 @@ export const App: React.FC = () => {
           toggleAllTodos={toggleAllTodos}
           isLoading={isLoading}
           todos={todos}
+          shouldFocusCreationForm={shouldFocusCreationForm.current}
           data-cy="Header"
         />
 
