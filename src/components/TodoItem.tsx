@@ -29,7 +29,7 @@ export const TodoItem = ({
 
   useEffect(() => {
     if (isEditing || isError) {
-      setTimeout(() => inputRef.current?.focus(), 0);
+      inputRef.current?.focus();
     }
   }, [isEditing, isError]);
 
@@ -41,15 +41,11 @@ export const TodoItem = ({
     const trimmedTitle = newTitle.trim();
 
     if (trimmedTitle === todo.title) {
-      setIsEditing(false);
-
-      return;
+      return setIsEditing(false);
     }
 
     if (!trimmedTitle) {
-      deleteTodo(todo.id);
-
-      return;
+      return deleteTodo(todo.id);
     }
 
     try {
@@ -58,7 +54,6 @@ export const TodoItem = ({
       setIsError(false);
     } catch {
       setIsError(true);
-      setTimeout(() => inputRef.current?.focus(), 0);
     }
   };
 
@@ -69,7 +64,7 @@ export const TodoItem = ({
     }
 
     if (event.key === 'Enter' && !isError) {
-      inputRef.current?.blur();
+      handleBlur();
     }
   };
 

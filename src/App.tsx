@@ -15,6 +15,7 @@ import { FilterStatus } from './types/FilterStatus';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import ErrorNotification from './components/ErrorNotification';
+import { ErrorMessage } from './types/ErrorMessage';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -34,7 +35,7 @@ export const App: React.FC = () => {
     shouldFocusCreationForm.current = false;
   }, []);
 
-  const handleError = (message: string) => {
+  const handleError = (message: ErrorMessage) => {
     setErrorMessage(message);
     setTimeout(() => setErrorMessage(''), 3000);
   };
@@ -43,10 +44,7 @@ export const App: React.FC = () => {
     setIsLoading(true);
     getTodos()
       .then(setTodos)
-      .catch(() => {
-        setErrorMessage('Unable to load todos');
-        setTimeout(() => setErrorMessage(''), 3000);
-      })
+      .catch(() => handleError(ErrorMessage.LOAD))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -65,7 +63,7 @@ export const App: React.FC = () => {
     const title = newTodoTitle.trim();
 
     if (!title) {
-      handleError('Title should not be empty');
+      handleError(ErrorMessage.EMPTY);
 
       return;
     }
@@ -87,7 +85,7 @@ export const App: React.FC = () => {
         setNewTodoTitle('');
       })
       .catch(() => {
-        handleError('Unable to add a todo');
+        handleError(ErrorMessage.ADD);
       })
       .finally(() => {
         setIsLoading(false);
@@ -105,24 +103,26 @@ export const App: React.FC = () => {
 
     await new Promise(resolve => setTimeout(resolve, 50));
 
+    const todoToUpdate = todos.find(todo => todo.id === id);
+
+    if (!todoToUpdate) {
+      return;
+    }
+
     try {
-      const todoToUpdate = todos.find(todo => todo.id === id);
+      const updatedTodoFS = await updateTodo(id, {
+        completed: !todoToUpdate.completed,
+      });
 
-      if (todoToUpdate) {
-        const updatedTodoFS = await updateTodo(id, {
-          completed: !todoToUpdate.completed,
-        });
-
-        setTodos(prevTodos =>
-          prevTodos.map(todo =>
-            todo.id === id
-              ? { ...todo, completed: updatedTodoFS.completed }
-              : todo,
-          ),
-        );
-      }
-    } catch (error) {
-      setErrorMessage('Unable to update a todo');
+      setTodos(prevTodos =>
+        prevTodos.map(todo =>
+          todo.id === id
+            ? { ...todo, completed: updatedTodoFS.completed }
+            : todo,
+        ),
+      );
+    } catch {
+      handleError(ErrorMessage.UPDATE);
     } finally {
       setDeletedIds(ids => ids.filter(todoId => todoId !== id));
     }
@@ -153,7 +153,7 @@ export const App: React.FC = () => {
         ),
       );
     } catch (error) {
-      setErrorMessage('Unable to update todos');
+      setErrorMessage(ErrorMessage.UPDATE);
     }
   }, [todos]);
 
@@ -164,7 +164,7 @@ export const App: React.FC = () => {
       await deleteTodo(todoId);
       setTodos(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
     } catch {
-      handleError('Unable to delete a todo');
+      handleError(ErrorMessage.DELETE);
     } finally {
       setDeletedIds(ids => ids.filter(id => id !== todoId));
       shouldFocusCreationForm.current = true;
@@ -205,7 +205,7 @@ export const App: React.FC = () => {
       setTodos(prevTodos =>
         prevTodos.map(todo => (todo.id === id ? foundTodo : todo)),
       );
-      setErrorMessage('Unable to update a todo');
+      setErrorMessage(ErrorMessage.UPDATE);
       setTimeout(() => setErrorMessage(''), 3000);
       throw new Error('');
     } finally {
@@ -258,7 +258,7 @@ export const App: React.FC = () => {
         )}
       </div>
       <ErrorNotification
-        errorMessage={errorMessage}
+        errorMessage={errorMessage as ErrorMessage}
         data-cy="ErrorNotification"
         aria-live="assertive"
       />

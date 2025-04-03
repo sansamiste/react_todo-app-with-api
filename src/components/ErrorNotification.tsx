@@ -1,7 +1,8 @@
 import cn from 'classnames';
+import { ErrorMessage } from '../types/ErrorMessage';
 
 interface Props {
-  errorMessage: string;
+  errorMessage: ErrorMessage;
 }
 
 export const ErrorNotification = ({ errorMessage }: Props) => (
