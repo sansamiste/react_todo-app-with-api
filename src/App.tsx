@@ -27,7 +27,6 @@ export const App: React.FC = () => {
   const [newTodoTitle, setNewTodoTitle] = useState('');
   const [tempAddedTodo, setTempAddedTodo] = useState<Todo | null>(null);
   const [deletedIds, setDeletedIds] = useState<number[]>([]);
-  const [toggledIds] = useState<number[]>([]);
 
   const shouldFocusCreationForm = useRef(true);
 
@@ -243,7 +242,6 @@ export const App: React.FC = () => {
             isLoading={isLoading}
             tempAddedTodo={tempAddedTodo}
             deletedIds={deletedIds}
-            toggledIds={toggledIds}
             data-cy="TodoListComponent"
           />
         </section>

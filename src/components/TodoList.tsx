@@ -9,7 +9,6 @@ interface TodoListProps {
   isLoading: boolean;
   tempAddedTodo: Todo | null;
   deletedIds: number[];
-  toggledIds: number[];
 }
 
 export const TodoList = ({
@@ -19,7 +18,6 @@ export const TodoList = ({
   renameTodo,
   tempAddedTodo,
   deletedIds,
-  toggledIds,
 }: TodoListProps) => {
   return (
     <div data-cy="TodoList">
@@ -31,7 +29,6 @@ export const TodoList = ({
           deleteTodo={deleteTodo}
           renameTodo={renameTodo}
           isLoading={deletedIds.includes(todo.id)}
-          isToggling={toggledIds.includes(todo.id)}
         />
       ))}
       {tempAddedTodo && (
@@ -42,7 +39,6 @@ export const TodoList = ({
           deleteTodo={deleteTodo}
           renameTodo={renameTodo}
           isLoading={true}
-          isToggling={false}
         />
       )}
     </div>

@@ -12,7 +12,6 @@ interface Props {
     inputRef: React.RefObject<HTMLInputElement>,
   ) => void;
   isLoading: boolean | undefined;
-  isToggling: boolean;
 }
 
 export const TodoItem = ({

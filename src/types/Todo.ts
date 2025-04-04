@@ -3,7 +3,4 @@ export interface Todo {
   userId: number;
   title: string;
   completed: boolean;
-  // isTemp?: boolean;
-  // ok?: boolean;
-  // json?: () => unknown;
 }
